@@ -102,6 +102,7 @@ namespace identity_dapper.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
         {
+            //     if not null, use this VV    if null use this VV   
             ViewData["ReturnUrl"] = returnUrl ?? Url.Content("~/");
             if (ModelState.IsValid)
             {

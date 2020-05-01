@@ -21,7 +21,7 @@ namespace identity_dapper
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
 
             builder.AddEnvironmentVariables();
@@ -36,19 +36,17 @@ namespace identity_dapper
         public void ConfigureServices(IServiceCollection services)
         {
             services.ConfigureDapperConnectionProvider<SqlServerConnectionProvider>(
-                Configuration.GetSection("ConnectionStrings"))
-                .ConfigureDapperIdentityCryptography(Configuration.GetSection("DapperIdentityCryptography"))
-                .ConfigureDapperIdentityOptions(new DapperIdentityOptions { UseTransactionalBehavior = false });
+                Configuration.GetSection("ConnectionStrings")
+            ).ConfigureDapperIdentityCryptography(Configuration.GetSection("DapperIdentityCryptography"))
+             .ConfigureDapperIdentityOptions(new DapperIdentityOptions { UseTransactionalBehavior = false });
 
-            services.AddControllersWithViews();
-
-            services.AddIdentity<DapperIdentityUser, DapperIdentityRole>(x =>
+            services.AddIdentity<DapperIdentityUser, DapperIdentityRole>(identityOptions =>
             {
-                x.Password.RequireDigit = false;
-                x.Password.RequiredLength = 1;
-                x.Password.RequireLowercase = false;
-                x.Password.RequireNonAlphanumeric = false;
-                x.Password.RequireUppercase = false;
+                identityOptions.Password.RequireDigit = false;
+                identityOptions.Password.RequiredLength = 1;
+                identityOptions.Password.RequireLowercase = false;
+                identityOptions.Password.RequireNonAlphanumeric = false;
+                identityOptions.Password.RequireUppercase = false;
             })
             .AddDapperIdentityFor<SqlServerConfiguration>()
             .AddDefaultTokenProviders();
@@ -56,12 +54,16 @@ namespace identity_dapper
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
+
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+
+
+            services.AddControllersWithViews();
 
         }
 
